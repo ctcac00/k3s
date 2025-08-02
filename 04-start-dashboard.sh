@@ -11,7 +11,7 @@ if ! command -v kubectl &> /dev/null; then
     exit 1
 fi
 
-echo "🔑 To get the token, run: ./6.get-dashboard-token.sh"
+echo "🔑 To get the token, run: ./05-get-dashboard-token.sh"
 echo "🔗 Access the dashboard at: https://localhost:8443"
 
 kubectl -n kubernetes-dashboard port-forward svc/dashboard-kong-proxy 8443:443
