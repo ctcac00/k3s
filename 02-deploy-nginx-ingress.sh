@@ -7,8 +7,12 @@ set -o pipefail
 echo "🚀 Deploying NGINX Ingress Controller for k3s..."
 
 if ! command -v helm &>/dev/null; then
-  echo "❌ Error: helm is not installed!"
-  exit 1
+  echo "🤔 Helm not found. Installing it..."
+  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  chmod 700 get_helm.sh
+  ./get_helm.sh
+  rm get_helm.sh
+  echo "✅ Helm installed."
 fi
 
 echo "Applying NGINX Ingress deployment manifest..."
@@ -19,6 +23,6 @@ echo "✅ NGINX Ingress manifest applied."
 
 echo "Applying CertManager deployment manifest..."
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
-echo "Applying CertManager deployment manifest..."
+echo "✅ CertManager deployment manifest applied."
 
 echo "🎉 NGINX Ingress Controller deployed successfully!"
