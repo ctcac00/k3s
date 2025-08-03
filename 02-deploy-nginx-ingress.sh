@@ -17,6 +17,8 @@ helm upgrade --install ingress-nginx ingress-nginx \
   --namespace ingress-nginx --create-namespace
 echo "✅ NGINX Ingress manifest applied."
 
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.2/cert-manager.yaml
+echo "Applying CertManager deployment manifest..."
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.18.2/cert-manager.yaml
+echo "Applying CertManager deployment manifest..."
 
 echo "🎉 NGINX Ingress Controller deployed successfully!"
