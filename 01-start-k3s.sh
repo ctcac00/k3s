@@ -26,7 +26,7 @@ echo "📦 Installing k3s..."
 echo "ℹ️  Disabling Traefik to allow installation of NGINX Ingress Controller."
 
 if [ "$IS_DEV_SERVER" = true ]; then
-  curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --disable=traefik" sh -s -
+  curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=traefik" sh -s -
 else
 
   echo "🔎 Installing AWS ECR Credential Provider..."
@@ -34,10 +34,34 @@ else
   chmod +x ecr-credential-provider-linux-amd64
   sudo mv ecr-credential-provider-linux-amd64 /usr/local/bin/ecr-credential-provider
 
+  # Ensure the target directory exists
+  sudo mkdir -p /etc/kubernetes
+
+  # Write the file as root
+  sudo tee /etc/kubernetes/ecr-credential-provider.json >/dev/null <<'EOF'
+{
+  "apiVersion": "kubelet.config.k8s.io/v1",
+  "kind": "CredentialProviderConfig",
+  "providers": [
+    {
+      "name": "ecr-credential-provider",
+      "matchImages": [
+        "*.dkr.ecr.*.amazonaws.com",
+        "*.dkr.ecr.*.amazonaws.com.cn"
+      ],
+      "apiVersion": "credentialprovider.kubelet.k8s.io/v1",
+      "defaultCacheDuration": "12h"
+    }
+  ]
+}
+EOF
+
+  echo "Credential provider config written to /etc/kubernetes/ecr-credential-provider.json"
+
   echo "🔎 Getting public IP address..."
   PUBLIC_IP=$(curl -4 -s ifconfig.me)
   echo "✅ Public IP address is: ${PUBLIC_IP}"
-  curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server --disable=traefik --tls-san ${PUBLIC_IP}" sh -s - \
+  curl -sfL https://get.k3s.io | K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=traefik --tls-san ${PUBLIC_IP}" sh -s - \
     --kubelet-arg="image-credential-provider-config=/etc/kubernetes/ecr-credential-provider.json" \
     --kubelet-arg="image-credential-provider-bin-dir=/usr/local/bin"
 fi
